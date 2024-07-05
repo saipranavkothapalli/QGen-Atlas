@@ -1,0 +1,85 @@
+{% extends 'layout.html' %} {% block body %}
+<div class="row align-items-center d-flex justify-content-center">
+  <div class="col-12 mb-4">
+    <div
+      class="card border-light shadow-sm components-section align-items-center d-flex justify-content-center"
+    >
+      <div class="card-body align-items-center d-flex justify-content-center">
+        <video height="480px" width="800px" autoplay loop muted>
+          <source
+            src="{{ url_for('static', filename='zoomed-in-arcs.h264.mp4') }}"
+            type="video/mp4"
+          />
+          Your browser does not support the video tag.
+        </video>
+        <div class="row mb-4">
+          <div class="card-body">
+            <form method="POST" action="test_generate">
+              <div class="mb-4">
+                <div class="form-group">
+                  <label class="h6" for="exampleFormControlTextarea1"
+                    >Input Text</label
+                  >
+                  <textarea
+                    name="itext"
+                    class="form-control"
+                    placeholder="Input Text?"
+                    rows="6"
+                    required
+                  ></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="h6" for="inlineFormCustomSelectPref"
+                    >Choose Question Type</label
+                  >
+                  <select
+                    class="custom-select my-1 mr-sm-2"
+                    id="inlineFormCustomSelectPref"
+                    name="test_type"
+                    required
+                  >
+                    <option value="objective">Objective</option>
+                    <option value="subjective">Subjective</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="h6" for="inlineFormCustomSelectPref"
+                    >Generation Type</label
+                  >
+                  <select
+                    class="custom-select my-1 mr-sm-2"
+                    id="inlineFormCustomSelectPref"
+                    name="generate_type"
+                    required
+                  >
+                    <option value="Q&A">Questions & Answers</option>
+                    <option value="Ans">Start Answering</option>
+                  </select>
+                </div>
+                <div class="form-group">
+                  <label class="h6" for="exampleFormControlTextarea1"
+                    >No of Questions</label
+                  >
+                  <input
+                    type="number"
+                    name="noq"
+                    class="form-control"
+                    placeholder="No. of Questions"
+                    min="1"
+                    required
+                  />
+                </div>
+                <input
+                  type="submit"
+                  class="btn btn-primary"
+                  value="Generate Q&A"
+                />
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

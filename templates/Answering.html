@@ -1,0 +1,164 @@
+{% extends 'layout.html' %} {% block body %}
+<img src="{{ url_for('static', filename='online_test_undraw.png') }}" />
+<div class="row">
+  <div class="col-12 mb-4">
+    <div class="card border-light shadow-sm">
+      <div class="card-header">
+        <div class="row align-items-center">
+          <div class="col">
+            <h2 class="h5">Start Answering</h2>
+          </div>
+        </div>
+      </div>
+      <div class="table-responsive">
+        <table id="example" class="table align-items-center table-flush">
+          <thead>
+            <th>Question</th>
+            <th>Language</th>
+            <th>Answer</th>
+            <th>Match %</th>
+          </thead>
+          <tbody>
+            {% for qa in cresults %}
+            <tr>
+              <td>{{ qa[0] }}</td>
+              <td>
+                <select name="language" class="form-select">
+                  <option value="en">English</option>
+                  <option value="es">Spanish</option>
+                  <option value="fr">French</option>
+                  <option value="de">German</option>
+                  <option value="it">Italian</option>
+                  <option value="ja">Japanese</option>
+                  <option value="ko">Korean</option>
+                  <option value="ru">Russian</option>
+                  <option value="ar">Arabic</option>
+                  <option value="pt">Portuguese</option>
+                  <option value="hi">Hindi</option>
+                  <option value="tr">Turkish</option>
+                  <option value="nl">Dutch</option>
+                  <option value="sv">Swedish</option>
+                  <option value="pl">Polish</option>
+                  <option value="fi">Finnish</option>
+                  <option value="id">Indonesian</option>
+                  <option value="th">Thai</option>
+                  <option value="vi">Vietnamese</option>
+                  <option value="ms">Malay</option>
+                  <option value="he">Hebrew</option>
+                  <option value="el">Greek</option>
+                </select>
+              </td>
+              <td>
+                <textarea
+                  name="itext"
+                  class="form-control"
+                  placeholder="Input Text?"
+                  rows="6"
+                  required
+                ></textarea>
+              </td>
+              <td><span id="match{{ loop.index }}"></span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<button onclick="calculateMatch()" class="btn btn-primary">
+  Calculate Match %
+</button>
+<button onclick="translateAnswers()" class="btn btn-primary">
+  Translate Answers
+</button>
+<script>
+  function translateAnswers() {
+    var textareas = document.querySelectorAll('textarea[name="itext"]');
+    var languages = document.querySelectorAll('select[name="language"]');
+
+    textareas.forEach((textarea, index) => {
+      var text = textarea.value;
+      var language = languages[index].value;
+
+      // Make API request to translate text
+      fetch(
+        "https://api.mymemory.translated.net/get?q=" +
+          text +
+          "&langpair=" +
+          language +
+          "|en"
+      )
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.responseStatus === 200) {
+            // Update textarea value with translated text
+            textarea.value = data.matches[0].translation;
+          } else {
+            // Handle error if translation fails
+            console.error("Translation failed:", data.responseStatus);
+          }
+        })
+        .catch((error) => {
+          console.error("Error:", error);
+        });
+    });
+  }
+</script>
+<script>
+  function calculateMatch(){
+      var textareas = document.querySelectorAll('textarea[name="itext"]');
+      var originalAnswers = {{ cresults | tojson }};
+
+      textareas.forEach((textarea, index) => {
+          var userAnswer = textarea.value.trim();
+          var originalAnswer = originalAnswers[index][1].trim();
+
+          // Calculate match percentage
+          var similarity = similarityPercentage(userAnswer, originalAnswer);
+          var cut_down=similarity+'';
+          // Display match percentage
+          var matchSpan = document.getElementById('match' + (index + 1));
+          if (matchSpan) {
+              matchSpan.innerText = cut_down[0]+''+cut_down[1]+cut_down[2]+'%';
+          }
+      });
+  }
+
+  function similarityPercentage(str1, str2) {
+      var maxLength = Math.max(str1.length, str2.length);
+      var distance = levenshteinDistance(str1, str2);
+      return ((maxLength - distance) / maxLength) * 100;
+  }
+
+  function levenshteinDistance(str1, str2) {
+      var matrix = [];
+      var i, j;
+
+      // Initialize the distance matrix
+      for (i = 0; i <= str1.length; i++) {
+          matrix[i] = [i];
+      }
+      for (j = 0; j <= str2.length; j++) {
+          matrix[0][j] = j;
+      }
+
+      // Calculate the minimum edit distance
+      for (i = 1; i <= str1.length; i++) {
+          for (j = 1; j <= str2.length; j++) {
+              if (str1.charAt(i - 1) === str2.charAt(j - 1)) {
+                  matrix[i][j] = matrix[i - 1][j - 1];
+              } else {
+                  matrix[i][j] = Math.min(
+                      matrix[i - 1][j - 1] + 1,
+                      matrix[i][j - 1] + 1,
+                      matrix[i - 1][j] + 1
+                  );
+              }
+          }
+      }
+
+      return matrix[str1.length][str2.length];
+  }
+</script>
+{% endblock %}
